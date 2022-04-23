@@ -1,0 +1,105 @@
+[tool.poetry]
+name = "docopt-completion"
+description = "A completion for the docopt language"
+version = "0.0.0-dev"
+authors = ["Anders Ingemann <anders@ingemann.de>"]
+license = "MIT"
+readme = "docs/README.pypi.md"
+homepage = "https://github.com/andsens/docopt-completion"
+repository = "https://github.com/andsens/docopt-completion"
+classifiers = [
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "License :: OSI Approved :: MIT License",
+]
+packages = [{ include = "docopt_completion" }]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+docopt = "^0.6.2"
+termcolor = "^1.1.0"
+pyyaml = "^6.0"
+docopt-parser = { path = "../docopt-parser/", develop = true }
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.0"
+pytest = "^7.1.1"
+pytest-xdist = "^2.5.0"
+pytest-flake8 = "^1.1.1"
+pyright = "^1.1.238"
+
+[tool.poetry.scripts]
+docopt-parser = "docopt_completion.__main__:main"
+
+[tool.pyright]
+include = ["docopt_completion", "tests"]
+strict = ["docopt_completion", "tests"]
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+strictParameterNoneValue = true
+enableTypeIgnoreComments = true
+reportGeneralTypeIssues = true
+reportPropertyTypeMismatch = true
+reportFunctionMemberAccess = true
+reportMissingImports = true
+reportMissingModuleSource = true
+reportMissingTypeStubs = true
+reportImportCycles = false
+reportUnusedImport = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true
+reportDuplicateImport = true
+reportWildcardImportFromLibrary = true
+reportOptionalSubscript = true
+reportOptionalMemberAccess = true
+reportOptionalCall = true
+reportOptionalIterable = true
+reportOptionalContextManager = true
+reportOptionalOperand = true
+reportTypedDictNotRequiredAccess = true
+reportUntypedFunctionDecorator = true
+reportUntypedClassDecorator = true
+reportUntypedBaseClass = true
+reportUntypedNamedTuple = true
+reportPrivateUsage = true
+reportPrivateImportUsage = true
+reportConstantRedefinition = true
+reportIncompatibleMethodOverride = true
+reportIncompatibleVariableOverride = true
+reportInconsistentConstructor = true
+reportOverlappingOverload = true
+reportMissingSuperCall = true
+reportUninitializedInstanceVariable = true
+reportInvalidStringEscapeSequence = true
+reportUnknownParameterType = true
+reportUnknownArgumentType = true
+reportUnknownLambdaType = true
+reportUnknownVariableType = true
+reportUnknownMemberType = true
+reportMissingParameterType = true
+reportMissingTypeArgument = true
+reportInvalidTypeVarUse = true
+reportCallInDefaultInitializer = true
+reportUnnecessaryIsInstance = true
+reportUnnecessaryCast = true
+reportUnnecessaryComparison = true
+reportAssertAlwaysTrue = true
+reportSelfClsParameterName = true
+reportImplicitStringConcatenation = true
+reportUndefinedVariable = true
+reportUnboundVariable = true
+reportInvalidStubStatement = true
+reportIncompleteStub = true
+reportUnsupportedDunderAll = true
+reportUnusedCallResult = false
+reportUnusedCoroutine = true
+reportUnusedExpression = true
+reportUnnecessaryTypeIgnoreComment = true
+reportMatchNotExhaustive = true
+
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
