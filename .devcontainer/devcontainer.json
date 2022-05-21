@@ -9,6 +9,9 @@
     "python.linting.flake8Args": [
       "--config=.flake8"
     ],
+    "python.analysis.extraPaths": [
+      "${localWorkspaceFolder}/../docopt-parser"
+    ],
     "files.exclude": {
       ".pytest_cache": true,
       ".hypothesis": true
