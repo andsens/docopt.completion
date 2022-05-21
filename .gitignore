@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+/docopt.completion.code-workspace
+/docopt_completion/version.py
+/*.txt
