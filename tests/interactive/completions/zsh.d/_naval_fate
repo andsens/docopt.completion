@@ -1,0 +1,16 @@
+#compdef naval_fate
+
+main() {
+  local context state line curcontext="$curcontext"
+  echo ''
+  echo $CURRENT
+  printf "%s\n" "${words[@]}"
+  echo ${words[CURRENT]}
+  echo $curcontext
+  echo $context
+  echo $state
+  echo $line
+  # compadd -- shoot
+}
+
+main "$@"
