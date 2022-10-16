@@ -2,17 +2,21 @@
   "name": "Python 3",
   "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.10",
   "settings": {
+    "python.defaultInterpreterPath": ".venv/bin/python",
+    "python.linting.flake8Path": ".venv/bin/flake8",
+    "python.testing.pytestPath": ".venv/bin/pytest",
+    "python.linting.pylintPath": ".venv/bin/pylint",
+    "python.poetryPath": "${userHome}/.local/bin/poetry",
+    "python.linting.pylintEnabled": true,
     "python.testing.pytestEnabled": true,
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
-    "python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
     "python.linting.flake8Args": [
       "--config=.flake8"
     ],
-    "python.analysis.extraPaths": [
-      "${localWorkspaceFolder}/../docopt-parser"
-    ],
+    "python.venvPath": ".venv",
     "files.exclude": {
+      ".venv": true,
       ".pytest_cache": true,
       ".hypothesis": true
     }
