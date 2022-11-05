@@ -13,7 +13,21 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "License :: OSI Approved :: MIT License",
 ]
-packages = [{ include = "docopt_completion" }]
+packages = [
+  { include = "docopt_completion" },
+  { include = "docopt_completion/py.typed" },
+]
+
+[tool.pylint.'MESSAGES CONTROL']
+indent-string = "  "
+disable = [
+  "missing-function-docstring",
+  "missing-class-docstring",
+]
+
+[tool.flake8]
+max-line-length = 120
+ignore = "E111,E114,E121,W503,E302,E303,E305"
 
 [tool.poetry.dependencies]
 python = ">=3.7.2,<4.0"
@@ -22,10 +36,11 @@ termcolor = "^1.1.0"
 pyyaml = "^6.0"
 ordered-set = "^4.1.0"
 docopt-parser = { path = "../docopt-parser/", develop = true }
+flake8-pyproject = "^1.1.0.post0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.15.4"
-flake8 = "^4.0.0"
+flake8 = "^5.0.0"
 pytest = "^7.1.1"
 pytest-xdist = "^2.5.0"
 pytest-flake8 = "^1.1.1"
