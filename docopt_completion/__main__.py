@@ -9,39 +9,43 @@ import yaml
 import docopt_parser as P
 from docopt_completion import __doc__ as pkg_doc, \
   __name__ as root_name, __version__
-from docopt_completion import intermediate
+from docopt_completion import intermediate, tables, bash
 
 log = logging.getLogger(root_name)
 
 __doc__: str = T.cast(str, pkg_doc) + """
 Usage:
   docopt-completion intermediate [FILE]
+  docopt-completion bash [FILE]
   docopt-completion -h
   docopt-completion --version
 
-Reads a docopt help text on stdin.
+Reads a docopt help text on stdin. FILE is an intermediate with annotations.
 
 Commands:
   intermediate  Write the YAML intermediate to stdout, or update FILE in place
                 keeping its annotations
+  bash          Write a bash completion script to stdout
 
 Options:
   --help -h  Show this help screen
   --version  Show the docopt.completion version
 """
-Params = T.TypedDict('Params', {'intermediate': bool, 'FILE': 'str | None'})
+Params = T.TypedDict('Params', {'intermediate': bool, 'bash': bool, 'FILE': 'str | None'})
 
 def docopt_completion(params: Params):
   try:
     text = sys.stdin.read()
-    if params['intermediate']:
-      previous = None
-      if params['FILE'] is not None and os.path.exists(params['FILE']):
-        with open(params['FILE']) as handle:
-          previous = yaml.safe_load(handle)
-      result, orphans = intermediate.generate(text, previous)
-      for key in orphans:
-        log.warning(f'{key} no longer matches anything in the usage, dropping it')
+    previous = None
+    if params['FILE'] is not None and os.path.exists(params['FILE']):
+      with open(params['FILE']) as handle:
+        previous = yaml.safe_load(handle)
+    result, orphans = intermediate.generate(text, previous)
+    for key in orphans:
+      log.warning(f'{key} no longer matches anything in the usage, dropping it')
+    if params['bash']:
+      sys.stdout.write(bash.generate(result['prog'], tables.compile(result)))
+    else:
       output = yaml.safe_dump(result, sort_keys=False, default_flow_style=None, allow_unicode=True)
       if params['FILE'] is None:
         sys.stdout.write(output)
