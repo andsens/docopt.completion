@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 from pathlib import Path
 import pytest
@@ -18,7 +19,7 @@ def test_default_dir():
 def write_tool(path: Path, usage: str, mtime: int):
   """A program with a docopt --help, recording its argv otherwise"""
   path.parent.mkdir(parents=True, exist_ok=True)
-  path.write_text(f'''#!/usr/bin/env bash
+  path.write_text(f'''#!{shutil.which('bash')}
 if [[ $1 = --help ]]; then
   printf '%s\\n' {usage!r}
   exit 0
@@ -34,12 +35,12 @@ mv -f "$DOCOPT_COMPLETION_OUT.tmp" "$DOCOPT_COMPLETION_OUT"
 def bin(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
   bindir = tmp_path / 'bin'
   bindir.mkdir()
-  # docopt-completion for the refresh hook, running this checkout
-  pythonpath = os.pathsep.join([
-    str(Path(__file__).parent.parent), os.path.dirname(os.path.dirname(docopt_parser.__file__)),
-  ])
+  # docopt-completion for the refresh hook, running this checkout with the test's interpreter and imports
+  pythonpath = os.pathsep.join([str(Path(__file__).parent.parent)] + [p for p in sys.path if p])
   wrapper = bindir / 'docopt-completion'
-  wrapper.write_text(f'#!/bin/sh\nPYTHONPATH={pythonpath} exec {sys.executable} -m docopt_completion "$@"\n')
+  wrapper.write_text(
+    f'#!{shutil.which("sh")}\nPYTHONPATH={pythonpath} exec {sys.executable} -m docopt_completion "$@"\n'
+  )
   wrapper.chmod(0o755)
   monkeypatch.setenv('PATH', f'{bindir}{os.pathsep}{os.environ["PATH"]}')
   return bindir

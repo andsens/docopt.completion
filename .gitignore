@@ -4,3 +4,4 @@ __pycache__/
 /docopt.completion.code-workspace
 /docopt_completion/version.py
 /*.txt
+/result

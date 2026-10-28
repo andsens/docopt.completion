@@ -146,6 +146,27 @@ add to `$fpath` before `compinit`. `--dir` overrides both.
 (`Usage: grep [OPTION]... PATTERNS [FILE]...`). They parse as docopt but list
 no options.
 
+=== Nix
+
+The flake has the package and a Home Manager module that registers commands
+on activation:
+
+[source,nix]
+----
+programs.docopt-completion = {
+  enable = true;
+  commands = [ "naval_fate" ];
+  zsh = {
+    enable = true;
+    directory = "$HOME/.zfunc";
+  };
+};
+----
+
+Commands are looked up in the profile, the system path and
+`home.sessionPath`. Without `directory` the scripts go to ``register``'s
+default.
+
 === Limitations
 
 * Typed options don't narrow the usage lines down. With
