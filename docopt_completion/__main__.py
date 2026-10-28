@@ -33,7 +33,9 @@ Commands:
                 in $fpath or to be sourced after compinit
   register      Write the completion for COMMAND from its --help, which
                 regenerates itself when COMMAND changes. Without --dir the
-                script goes where bash-completion loads it from, or to
+                script goes to the shell's directory in
+                ${XDG_CONFIG_HOME:-~/.config}/docopt.completion/config.yaml,
+                else where bash-completion loads it from, or to
                 ${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions for zsh
 
 Options:
@@ -52,7 +54,7 @@ def docopt_completion(params: Params):
       directory = params['--dir'] or register.default_dir(shell, os.environ)
       path = register.register(shell, T.cast(str, params['COMMAND']), directory)
       log.info(f'Wrote {path}')
-      if shell == 'zsh':
+      if shell == 'zsh' and params['--dir'] is None and register.configured_dir(shell, os.environ) is None:
         log.info(f'Add {directory} to $fpath before compinit if it isn\'t there already')
       return
     text = sys.stdin.read()

@@ -15,8 +15,8 @@ let
       default = null;
       example = "$HOME/.zfunc";
       description = ''
-        Where to write the ${name} completion scripts, expanded by the shell. `null` is
-        `docopt.completion register`'s default.
+        Where `docopt.completion register` writes ${name} completion scripts, by hand too: `~` and
+        `$VAR` are expanded. `null` is its built-in default.
       '';
     };
   };
@@ -30,13 +30,11 @@ let
   );
   register =
     name:
-    let
-      dir = lib.optionalString (cfg.${name}.directory != null) ''--dir="${cfg.${name}.directory}" '';
-    in
     lib.concatMapStrings (command: ''
-      run ${lib.getExe cfg.package} register ${dir}${name} ${lib.escapeShellArg command} \
+      run ${lib.getExe cfg.package} register ${name} ${lib.escapeShellArg command} \
         || warnEcho "docopt.completion: Could not register ${name} completion for ${command}"
     '') cfg.commands;
+  directories = lib.filterAttrs (_: shell: shell.directory != null) { inherit (cfg) bash zsh; };
 in
 {
   options.programs.docopt-completion = {
@@ -64,9 +62,15 @@ in
   config = lib.mkIf cfg.enable {
     # The scripts run docopt.completion from $PATH when they regenerate
     home.packages = [ cfg.package ];
-    home.activation.docopt-completion = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    xdg.configFile."docopt.completion/config.yaml" = lib.mkIf (directories != { }) {
+      source = (pkgs.formats.yaml { }).generate "docopt.completion.yaml" (
+        lib.mapAttrs (_: shell: { inherit (shell) directory; }) directories
+      );
+    };
+    # After linkGeneration, which writes the config file
+    home.activation.docopt-completion = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
       (
-        export PATH="$PATH:${searchPath}"
+        export PATH="$PATH:${searchPath}" XDG_CONFIG_HOME=${lib.escapeShellArg config.xdg.configHome}
         ${lib.optionalString cfg.bash.enable (register "bash")}
         ${lib.optionalString cfg.zsh.enable (register "zsh")}
       )

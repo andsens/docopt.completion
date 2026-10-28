@@ -136,11 +136,22 @@ $ docopt.completion register bash naval_fate
 $ docopt.completion register zsh naval_fate
 ----
 
-bash scripts go where bash-completion loads them from
+Without `--dir`, scripts go to the shell's directory in
+`${XDG_CONFIG_HOME:-~/.config}/docopt.completion/config.yaml`:
+
+[source,yaml]
+----
+zsh:
+  directory: ~/.zfunc
+bash:
+  directory: $HOME/.local/share/bash-completion/completions
+----
+
+Otherwise bash scripts go where bash-completion loads them from
 (`$BASH_COMPLETION_USER_DIR`, else
-`${XDG_DATA_HOME:-~/.local/share}/bash-completion`, in `completions/`). zsh
-scripts go to `${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions`, which you
-add to `$fpath` before `compinit`. `--dir` overrides both.
+`${XDG_DATA_HOME:-~/.local/share}/bash-completion`, in `completions/`), and zsh
+scripts to `${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions`, which you add
+to `$fpath` before `compinit`.
 
 `register` refuses GNU style help texts
 (`Usage: grep [OPTION]... PATTERNS [FILE]...`). They parse as docopt but list
@@ -164,8 +175,8 @@ programs.docopt-completion = {
 ----
 
 Commands are looked up in the profile, the system path and
-`home.sessionPath`. Without `directory` the scripts go to ``register``'s
-default.
+`home.sessionPath`. The `directory` options go into ``register``'s config
+file, so registering by hand uses them too.
 
 === Limitations
 

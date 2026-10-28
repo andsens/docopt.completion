@@ -3,9 +3,11 @@ Completion for a docopt program that has none, generated from its `--help`. The 
 itself when the program's resolved path or modification time changes.
 """
 import os
+import re
 import shutil
 import subprocess
 import typing as T
+import yaml
 import docopt_parser as P
 from docopt_completion import intermediate, tables, bash, zsh
 
@@ -14,8 +16,25 @@ class NotDocoptError(P.DocoptError):
   pass
 
 
+def configured_dir(shell: str, env: T.Mapping[str, str]) -> "str | None":
+  """The shell's directory in $XDG_CONFIG_HOME/docopt.completion/config.yaml"""
+  config_home = env.get('XDG_CONFIG_HOME') or os.path.join(env['HOME'], '.config')
+  config_path = os.path.join(config_home, 'docopt.completion', 'config.yaml')
+  if os.path.exists(config_path):
+    with open(config_path) as handle:
+      config = T.cast(T.Dict[str, T.Dict[str, str]], yaml.safe_load(handle) or {})
+    if (configured := config.get(shell, {}).get('directory')) is not None:
+      # Expanded like the shell would: ~ and $VAR or ${VAR}
+      return re.sub(r'^~(?=/|$)', env['HOME'], re.sub(
+        r'\$(\w+)|\$\{(\w+)\}', lambda m: env.get(m.group(1) or m.group(2), ''), configured
+      ))
+  return None
+
+
 def default_dir(shell: str, env: T.Mapping[str, str]) -> str:
-  """Where bash-completion lazy-loads user completions from; zsh has no such place"""
+  """The configured directory, else where bash-completion lazy-loads user completions from"""
+  if (configured := configured_dir(shell, env)) is not None:
+    return configured
   data = env.get('XDG_DATA_HOME') or os.path.join(env['HOME'], '.local', 'share')
   if shell == 'bash':
     user_dir = env.get('BASH_COMPLETION_USER_DIR', '').split(':')[0] or os.path.join(data, 'bash-completion')

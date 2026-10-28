@@ -16,6 +16,19 @@ def test_default_dir():
   assert register.default_dir('zsh', {'HOME': '/h', 'XDG_DATA_HOME': '/x'}) == '/x/zsh/site-functions'
 
 
+def test_default_dir_from_config(tmp_path: Path):
+  (tmp_path / 'docopt.completion').mkdir()
+  (tmp_path / 'docopt.completion' / 'config.yaml').write_text(
+    'zsh:\n  directory: $HOME/dotfiles/completions\nbash:\n  directory: ~/bash\n'
+  )
+  env = {'HOME': '/h', 'XDG_CONFIG_HOME': str(tmp_path)}
+  assert register.default_dir('zsh', env) == '/h/dotfiles/completions'
+  assert register.default_dir('bash', env) == '/h/bash'
+  (tmp_path / 'docopt.completion' / 'config.yaml').write_text('zsh:\n  directory: ${HOME}/z\n')
+  assert register.default_dir('zsh', env) == '/h/z'
+  assert register.default_dir('bash', env) == '/h/.local/share/bash-completion/completions'
+
+
 def write_tool(path: Path, usage: str, mtime: int):
   """A program with a docopt --help, recording its argv otherwise"""
   path.parent.mkdir(parents=True, exist_ok=True)
