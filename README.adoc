@@ -1,1 +1,168 @@
 == docopt.completion
+
+Generates bash and zsh completion scripts from a http://docopt.org/[docopt]
+help text. The scripts are self-contained and need only bash 4+ or zsh at
+completion time. Works with any docopt program, including
+https://github.com/andsens/docopt.sh[docopt.sh] scripts.
+
+=== Quick start
+
+link:tests/interactive/programs/naval_fate[naval_fate] is a docopt.sh script
+with this help text:
+
+----
+Naval Fate.
+Usage:
+  naval_fate <name> move <x> <y> [--speed=<kn>]
+  naval_fate shoot <x> <y>
+
+Options:
+  --speed=<kn>  Speed in knots [default: 10].
+----
+
+Install docopt.completion from a checkout and generate the completion:
+
+[source,sh]
+----
+$ pip install .
+$ completions=${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions
+$ naval_fate --help | docopt-completion bash > "$completions/naval_fate.bash"
+$ naval_fate --help | docopt-completion zsh > ~/.zfunc/_naval_fate  # a directory in $fpath
+----
+
+`naval_fate Olympia move 1 5 --sp<TAB>` now completes to `--speed`, and
+`--speed=<TAB>` offers the default, `10`.
+
+=== Annotating the completion
+
+The scripts are generated from an intermediate YAML file, which you can edit
+to say what an argument completes to:
+
+[source,sh]
+----
+$ naval_fate --help | docopt-completion intermediate naval_fate.yaml
+----
+
+[source,yaml]
+----
+prog: naval_fate
+usage:
+  choice:
+  - sequence:
+    - <name>
+    - move
+    - <x>
+    - <y>
+    - optional: [--speed]
+  - sequence: [shoot, <x>, <y>]
+nodes:
+  <name>: {type: argument, complete: none}
+  move: {type: command}
+  <x>: {type: argument, complete: none}
+  <y>: {type: argument, complete: none}
+  --speed:
+    type: option
+    argument: <kn>
+    default: ['10']
+    description: Speed in knots.
+    complete:
+      words: ['10']
+  shoot: {type: command}
+----
+
+Edit `complete` and `description` in `nodes`, then generate the script from
+the help text and the file:
+
+[source,yaml]
+----
+  <name>:
+    type: argument
+    complete: {command: naval_fate list-ships}
+  move: {type: command, description: Move a ship}
+----
+
+[source,sh]
+----
+$ naval_fate --help | docopt-completion bash naval_fate.yaml > "$completions/naval_fate.bash"
+----
+
+Run `intermediate` with the same file again after changing the help text: it
+updates `usage` and the parsed fields, keeps your annotations and warns about
+nodes that no longer exist. An annotation you delete is reset to its default.
+
+`complete` is one of these sources, or a list of them:
+
+[cols="1,3"]
+|===
+|`files`, `dirs` |Paths, or only directories
+|`hosts`, `users`, `groups` |Host, user and group names
+|`commands`, `signals`, `processes` |Commands on `$PATH`, signal names, PIDs
+|`{words: [a, b]}` |These words
+|`{command: ...}` |The lines a shell command prints
+|`none` |Nothing
+|===
+
+`description` is shown by zsh, for options and commands.
+
+Without annotations, arguments and option arguments complete by the last word
+of their placeholder: `<file>`, `<config-file>`, `OUTPUT_FILE` and `<files>` get
+`files`, likewise `dir`/`directory`, `path` (files), `host`/`hostname`, `user`,
+`group`, `cmd`/`command`, `signal`/`sig` and `pid`. Everything else gets
+`none`. An option's `[default: ...]` is offered as well.
+
+==== Different completion for the same argument
+
+`<x>` appears on both usage lines and is a single node. Add a node whose key
+names the commands before it to give one occurrence its own completion, and
+run `intermediate` again:
+
+[source,yaml]
+----
+  shoot <x>: {type: argument, complete: {command: naval_fate list-targets}}
+----
+
+When the usage lines only differ after the argument, number the occurrence in
+usage order instead: `<x>#2`.
+
+=== Completion for other people's tools
+
+`register` generates the completion from a program's `--help` and installs it.
+The script regenerates itself on the next `<TAB>` after the program changes
+(a new mtime or, after a Nix upgrade, a new path):
+
+[source,sh]
+----
+$ docopt-completion register bash naval_fate
+$ docopt-completion register zsh naval_fate
+----
+
+bash scripts go where bash-completion loads them from
+(`$BASH_COMPLETION_USER_DIR`, else
+`${XDG_DATA_HOME:-~/.local/share}/bash-completion`, in `completions/`). zsh
+scripts go to `${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions`, which you
+add to `$fpath` before `compinit`. `--dir` overrides both.
+
+`register` refuses GNU style help texts
+(`Usage: grep [OPTION]... PATTERNS [FILE]...`). They parse as docopt but list
+no options.
+
+=== Limitations
+
+* Typed options don't narrow the usage lines down. With
+  `prog --foo a | prog b`, `prog --foo <TAB>` still offers `b`. Mutually
+  exclusive and required options aren't enforced either.
+* bash matches quoted words with their quotes, `'move'` isn't the command
+  `move`.
+
+=== Development
+
+[source,sh]
+----
+$ poetry install
+$ poetry run pytest
+$ tests/interactive.sh zsh
+----
+
+The tests drive real bash and zsh sessions, both need to be on `$PATH`.
+`tests/interactive.sh [SHELL]` starts a clean shell with naval_fate and its
+completion loaded.
