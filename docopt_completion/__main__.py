@@ -9,7 +9,7 @@ import yaml
 import docopt_parser as P
 from docopt_completion import __doc__ as pkg_doc, \
   __name__ as root_name, __version__
-from docopt_completion import intermediate, tables, bash
+from docopt_completion import intermediate, tables, bash, zsh
 
 log = logging.getLogger(root_name)
 
@@ -17,6 +17,7 @@ __doc__: str = T.cast(str, pkg_doc) + """
 Usage:
   docopt-completion intermediate [FILE]
   docopt-completion bash [FILE]
+  docopt-completion zsh [FILE]
   docopt-completion -h
   docopt-completion --version
 
@@ -26,12 +27,14 @@ Commands:
   intermediate  Write the YAML intermediate to stdout, or update FILE in place
                 keeping its annotations
   bash          Write a bash completion script to stdout
+  zsh           Write a zsh completion script to stdout, for a file named _<prog>
+                in $fpath or to be sourced after compinit
 
 Options:
   --help -h  Show this help screen
   --version  Show the docopt.completion version
 """
-Params = T.TypedDict('Params', {'intermediate': bool, 'bash': bool, 'FILE': 'str | None'})
+Params = T.TypedDict('Params', {'intermediate': bool, 'bash': bool, 'zsh': bool, 'FILE': 'str | None'})
 
 def docopt_completion(params: Params):
   try:
@@ -45,6 +48,8 @@ def docopt_completion(params: Params):
       log.warning(f'{key} no longer matches anything in the usage, dropping it')
     if params['bash']:
       sys.stdout.write(bash.generate(result['prog'], tables.compile(result)))
+    elif params['zsh']:
+      sys.stdout.write(zsh.generate(result['prog'], tables.compile(result)))
     else:
       output = yaml.safe_dump(result, sort_keys=False, default_flow_style=None, allow_unicode=True)
       if params['FILE'] is None:

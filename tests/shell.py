@@ -74,6 +74,17 @@ class Shell(object):
     with open(self.out) as handle:
       return handle.read().split('\n')[:-1]
 
+  def screen(self, keys: str, timeout: float = 0.5) -> str:
+    """Type `keys`, return the terminal output until it has been quiet for `timeout` and clear the line"""
+    self.drain()
+    self.send(keys)
+    output = b''
+    while select.select([self.master], [], [], timeout)[0]:
+      output += os.read(self.master, 65536)
+    self.send('\x15')
+    self.drain()
+    return output.decode(errors='replace')
+
   def close(self):
     self.process.kill()
     self.process.wait()

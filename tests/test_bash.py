@@ -73,42 +73,43 @@ Options:
 '''
 
 
-def test_naval_fate():
-  def edit(nodes: T.Dict[str, T.Any]):
-    nodes['<name>']['complete'] = {'command': "printf '%s\\n' alpha beta"}
-    nodes['<x>']['complete'] = {'words': ['1', '2']}
-  check(naval_fate, [
+def naval_fate_edit(nodes: T.Dict[str, T.Any]):
+  nodes['<name>']['complete'] = {'command': "printf '%s\\n' alpha beta"}
+  nodes['<x>']['complete'] = {'words': ['1', '2']}
+
+
+def wordbreaks_edit(nodes: T.Dict[str, T.Any]):
+  nodes['<x>']['complete'] = {'words': ['a:b', 'a:c']}
+  nodes['<y>']['complete'] = {'words': ['yy']}
+
+
+# Usage, lines to complete after the program name, edits to the nodes
+cases: T.Dict[str, T.Tuple[str, T.List[str], Edit]] = {
+  'naval_fate': (naval_fate, [
     '', 's', 'al', 'ship ', 'ship m', 'shoot ', 'ship move ', 'ship move 1', 'ship move 1 2 ',
     'ship move 1 2 -', 'ship move 1 2 --', 'ship move --speed ', 'ship move -s ', 'ship move --speed=',
     'ship move --speed=1', 'ship move --sp=', 'ship move -s5 ', 'ship move --speed 5 ',
     'ship move 1 2 3 ', 'ship move --speed=5 -',
-  ], edit)
+  ], naval_fate_edit),
+  'option_scope': ('Usage:\n  prog a [-v] <x>\n  prog b [-q]', ['-', 'a -', 'b -', 'a -v -'], lambda _: None),
+  'repeatable': ('Usage: prog [-v...] <x>', ['-v -', '-v -v -'], lambda _: None),
+  'stacked_shorts': (
+    'Usage: prog [-v] [-o <file>] <x>\n\nOptions:\n  -v\n  -o <file>\n',
+    ['-vo ', '-vofoo ', '-vo foo -', '-o'],
+    lambda nodes: nodes['-o'].update(complete={'words': ['out']}),
+  ),
+  'separator': (
+    'Usage: prog [-v] [--] <x>...', ['-- ', '-- -v ', '-- -', '-v -- ', '-v -'],
+    lambda nodes: nodes['<x>'].update(complete={'words': ['w1', 'w2']}),
+  ),
+  'wordbreaks': ('Usage: prog <x> <y>', ['a:b ', 'a:', 'a:b', 'a'], wordbreaks_edit),
+}
 
 
-def test_option_scope():
-  check('Usage:\n  prog a [-v] <x>\n  prog b [-q]', ['-', 'a -', 'b -', 'a -v -'])
-
-
-def test_repeatable():
-  check('Usage: prog [-v...] <x>', ['-v -', '-v -v -'])
-
-
-def test_stacked_shorts():
-  check('Usage: prog [-v] [-o <file>] <x>\n\nOptions:\n  -v\n  -o <file>\n', [
-    '-vo ', '-vofoo ', '-vo foo -', '-o',
-  ], lambda nodes: nodes['-o'].update(complete={'words': ['out']}))
-
-
-def test_separator():
-  check('Usage: prog [-v] [--] <x>...', ['-- ', '-- -v ', '-- -', '-v -- ', '-v -'],
-        lambda nodes: nodes['<x>'].update(complete={'words': ['w1', 'w2']}))
-
-
-def test_wordbreaks_in_positionals():
-  def edit(nodes: T.Dict[str, T.Any]):
-    nodes['<x>']['complete'] = {'words': ['a:b', 'a:c']}
-    nodes['<y>']['complete'] = {'words': ['yy']}
-  check('Usage: prog <x> <y>', ['a:b ', 'a:', 'a:b', 'a'], edit)
+@pytest.mark.parametrize('name', cases.keys())
+def test_cases(name: str):
+  text, lines, edit = cases[name]
+  check(text, lines, edit)
 
 
 @pytest.fixture

@@ -33,13 +33,13 @@ FN() {
       positional=true
       state=${st_sep[state]}
     elif ! $positional && [[ $word = --* ]]; then
-      if FN_find "${word%%=*}" true; then
+      if HELPERS_find "${word%%=*}" true; then
         used+="$opt "
         [[ ${opt_arg[opt]} = 1 && $word != *=* ]] && expect=$opt
       fi
     elif ! $positional && [[ $word = -?* ]]; then
       for ((pos=1; pos<${#word}; pos++)); do
-        if FN_find "-${word:pos:1}" false; then
+        if HELPERS_find "-${word:pos:1}" false; then
           used+="$opt "
           if [[ ${opt_arg[opt]} = 1 ]]; then
             [[ $pos -eq $((${#word}-1)) ]] && expect=$opt
@@ -64,7 +64,7 @@ FN() {
   if [[ $expect != -1 ]]; then
     src=${opt_src[expect]}
   elif ! $positional && [[ $cur = --*=* ]]; then
-    FN_find "${cur%%=*}" true && [[ ${opt_arg[opt]} = 1 ]] || return 0
+    HELPERS_find "${cur%%=*}" true && [[ ${opt_arg[opt]} = 1 ]] || return 0
     src=${opt_src[opt]}
     prefix=${cur%%=*}=
   else
@@ -91,7 +91,7 @@ FN() {
     [[ $w = "$cur"* ]] && COMPREPLY+=("${w:strip}")
   done
   [[ $src = -1 ]] && return 0
-  FN_source "$src" "${cur#"$prefix"}"
+  HELPERS_source "$src" "${cur#"$prefix"}"
   for w in "${values[@]}"; do
     w=$prefix$w
     COMPREPLY+=("${w:strip}")
@@ -99,7 +99,7 @@ FN() {
 }
 
 # Sets $opt to the option named $1, matching long options by prefix when $2 is true
-FN_find() {
+HELPERS_find() {
   local i n matches=() first=''
   for i in "${!opt_names[@]}"; do
     for n in ${opt_names[i]}; do
@@ -127,7 +127,7 @@ FN_find() {
 }
 
 # Adds the candidates of source set $1 that start with $2 to $values
-FN_source() {
+HELPERS_source() {
   local w
   case $1 in
     "SOURCES"

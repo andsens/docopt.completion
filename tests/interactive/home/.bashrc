@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=1090
-source "$PROJECTDIR/tests/interactive/completions/bash.d"/*.sh
+source <(naval_fate --help | "$PROJECTDIR/.venv/bin/docopt-completion" bash)
