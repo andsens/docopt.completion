@@ -9,7 +9,7 @@ import yaml
 import docopt_parser as P
 from docopt_completion import __doc__ as pkg_doc, \
   __name__ as root_name, __version__
-from docopt_completion import intermediate, tables, bash, zsh
+from docopt_completion import intermediate, tables, bash, zsh, register
 
 log = logging.getLogger(root_name)
 
@@ -18,10 +18,12 @@ Usage:
   docopt-completion intermediate [FILE]
   docopt-completion bash [FILE]
   docopt-completion zsh [FILE]
+  docopt-completion register [--dir=DIR] (bash|zsh) COMMAND
   docopt-completion -h
   docopt-completion --version
 
-Reads a docopt help text on stdin. FILE is an intermediate with annotations.
+Reads a docopt help text on stdin, except for register. FILE is an intermediate
+with annotations.
 
 Commands:
   intermediate  Write the YAML intermediate to stdout, or update FILE in place
@@ -29,15 +31,30 @@ Commands:
   bash          Write a bash completion script to stdout
   zsh           Write a zsh completion script to stdout, for a file named _<prog>
                 in $fpath or to be sourced after compinit
+  register      Write the completion for COMMAND from its --help, which
+                regenerates itself when COMMAND changes. Without --dir the
+                script goes where bash-completion loads it from, or to
+                ${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions for zsh
 
 Options:
   --help -h  Show this help screen
   --version  Show the docopt.completion version
 """
-Params = T.TypedDict('Params', {'intermediate': bool, 'bash': bool, 'zsh': bool, 'FILE': 'str | None'})
+Params = T.TypedDict('Params', {
+  'intermediate': bool, 'bash': bool, 'zsh': bool, 'register': bool,
+  'FILE': 'str | None', '--dir': 'str | None', 'COMMAND': 'str | None',
+})
 
 def docopt_completion(params: Params):
   try:
+    if params['register']:
+      shell = 'bash' if params['bash'] else 'zsh'
+      directory = params['--dir'] or register.default_dir(shell, os.environ)
+      path = register.register(shell, T.cast(str, params['COMMAND']), directory)
+      log.info(f'Wrote {path}')
+      if shell == 'zsh':
+        log.info(f'Add {directory} to $fpath before compinit if it isn\'t there already')
+      return
     text = sys.stdin.read()
     previous = None
     if params['FILE'] is not None and os.path.exists(params['FILE']):

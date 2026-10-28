@@ -23,6 +23,21 @@ def source_code(source: Tb.Source) -> str:
   return f'while IFS= read -r w; do [[ $w = "$2"* ]] && values+=("$w"); done < <({source["command"]})'
 
 
-def generate(prog: str, compiled: Tb.Tables) -> str:
+def generate(prog: str, compiled: Tb.Tables, refresh: "script.Refresh | None" = None) -> str:
   function = '_docopt_' + re.sub(r'[^A-Za-z0-9_]', '_', prog)
-  return script.render('bash.sh', prog, function, compiled, source_code, 0, False)
+  code = ''
+  if refresh is not None:
+    binary, path, regenerate = (script.quote(refresh[0]), script.quote(refresh[1]), shlex.join(refresh[2]))
+    code = f'''# Regenerate this script when {prog} changed since
+local bin
+if [[ -z ${{_docopt_refreshed-}} ]] && bin=$(type -P {shlex.quote(prog)}) && bin=$(realpath -- "$bin") \\
+  && [[ $bin != {binary} || $bin -nt {path} || $bin -ot {path} ]]; then
+  local _docopt_refreshed=1
+  if {regenerate} >/dev/null 2>&1; then
+    # shellcheck disable=SC1090
+    source {path}
+    {function} "$@"
+    return
+  fi
+fi'''
+  return script.render('bash.sh', prog, function, compiled, source_code, 0, False, code)

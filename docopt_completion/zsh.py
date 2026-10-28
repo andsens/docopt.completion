@@ -21,6 +21,20 @@ def source_code(source: Tb.Source) -> str:
   return f'compadd -- ${{(f)"$({source["command"]})"}} && ret=0'
 
 
-def generate(prog: str, compiled: Tb.Tables) -> str:
+def generate(prog: str, compiled: Tb.Tables, refresh: "script.Refresh | None" = None) -> str:
   # Named like the file compinit autoloads (_<prog>), so that the first run replaces the autoload stub
-  return script.render('zsh.sh', prog, '_' + prog, compiled, source_code, 1, True)
+  function = '_' + prog
+  code = ''
+  if refresh is not None:
+    binary, path, regenerate = (script.quote(refresh[0]), script.quote(refresh[1]), shlex.join(refresh[2]))
+    code = f'''# Regenerate this script when {prog} changed since
+local bin=${{commands[{prog}]:A}}
+if [[ -z $_docopt_refreshed && -n $bin && ( $bin != {binary} || $bin -nt {path} || $bin -ot {path} ) ]]; then
+  local _docopt_refreshed=1
+  if {regenerate} >/dev/null 2>&1; then
+    source {path}
+    {function} "$@"
+    return
+  fi
+fi'''
+  return script.render('zsh.sh', prog, function, compiled, source_code, 1, True, code)

@@ -129,5 +129,8 @@ def test_cli_updates_file_in_place(tmp_path: T.Any, monkeypatch: pytest.MonkeyPa
   previous['nodes']['move']['description'] = 'Move a ship'
   path.write_text(yaml.safe_dump(previous))
   monkeypatch.setattr('sys.stdin', io.StringIO(naval_fate))
-  docopt_completion({'intermediate': True, 'bash': False, 'zsh': False, 'FILE': str(path)})
+  docopt_completion({
+    'intermediate': True, 'bash': False, 'zsh': False, 'register': False,
+    'FILE': str(path), '--dir': None, 'COMMAND': None,
+  })
   assert yaml.safe_load(path.read_text())['nodes']['move']['description'] == 'Move a ship'

@@ -4,12 +4,21 @@ import shlex
 import typing as T
 from docopt_completion import tables as Tb
 
+# The resolved binary, the path of the script and the command that regenerates it
+Refresh = T.Tuple[str, str, T.List[str]]
+
+
+def quote(value: str) -> str:
+  """Always quoted, unlike shlex.quote: unquoted on the right of [[ x = y ]] is a pattern"""
+  return "'" + value.replace("'", "'\\''") + "'"
+
 
 def render(template: str, prog: str, function: str, compiled: Tb.Tables,
-           source_code: T.Callable[[Tb.Source], str], base: int, descriptions: bool) -> str:
+           source_code: T.Callable[[Tb.Source], str], base: int, descriptions: bool, refresh: str = '') -> str:
   """
   Fill a shell template with the tables as arrays. Indexes start at `base`, `base - 1` is none.
   `function` is the completion function, its helpers are prefixed with `_docopt_<prog>`.
+  `refresh` is code to run first in the completion function.
   """
   source_sets: T.List[T.List[Tb.Source]] = []
 
@@ -63,4 +72,5 @@ def render(template: str, prog: str, function: str, compiled: Tb.Tables,
     .replace('"PROG"', shlex.quote(prog))
     .replace('"TABLES"', '\n  '.join(table_lines))
     .replace('"SOURCES"', '\n    '.join(source_lines))
+    .replace('  "REFRESH"\n', ''.join(f'  {line}\n' for line in refresh.splitlines()))
   )
