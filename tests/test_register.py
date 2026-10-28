@@ -35,9 +35,9 @@ mv -f "$DOCOPT_COMPLETION_OUT.tmp" "$DOCOPT_COMPLETION_OUT"
 def bin(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
   bindir = tmp_path / 'bin'
   bindir.mkdir()
-  # docopt-completion for the refresh hook, running this checkout with the test's interpreter and imports
+  # docopt.completion for the refresh hook, running this checkout with the test's interpreter and imports
   pythonpath = os.pathsep.join([str(Path(__file__).parent.parent)] + [p for p in sys.path if p])
-  wrapper = bindir / 'docopt-completion'
+  wrapper = bindir / 'docopt.completion'
   wrapper.write_text(
     f'#!{shutil.which("sh")}\nPYTHONPATH={pythonpath} exec {sys.executable} -m docopt_completion "$@"\n'
   )

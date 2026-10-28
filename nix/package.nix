@@ -93,6 +93,6 @@ py.buildPythonApplication {
     description = "Shell completion generated from docopt help texts";
     homepage = "https://github.com/andsens/docopt.completion";
     license = lib.licenses.mit;
-    mainProgram = "docopt-completion";
+    mainProgram = "docopt.completion";
   };
 }

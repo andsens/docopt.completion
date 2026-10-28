@@ -15,12 +15,12 @@ log = logging.getLogger(root_name)
 
 __doc__: str = T.cast(str, pkg_doc) + """
 Usage:
-  docopt-completion intermediate [FILE]
-  docopt-completion bash [FILE]
-  docopt-completion zsh [FILE]
-  docopt-completion register [--dir=DIR] (bash|zsh) COMMAND
-  docopt-completion -h
-  docopt-completion --version
+  docopt.completion intermediate [FILE]
+  docopt.completion bash [FILE]
+  docopt.completion zsh [FILE]
+  docopt.completion register [--dir=DIR] (bash|zsh) COMMAND
+  docopt.completion -h
+  docopt.completion --version
 
 Reads a docopt help text on stdin, except for register. FILE is an intermediate
 with annotations.

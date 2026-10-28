@@ -40,7 +40,7 @@ def register(shell: str, command: str, directory: str) -> str:
   compiled = tables.compile(result)
   name = os.path.basename(command)
   path = os.path.join(directory, f'{name}.bash' if shell == 'bash' else f'_{name}')
-  refresh = (binary, path, ['docopt-completion', 'register', f'--dir={directory}', shell, command])
+  refresh = (binary, path, ['docopt.completion', 'register', f'--dir={directory}', shell, command])
   code = (bash if shell == 'bash' else zsh).generate(name, compiled, refresh)
   os.makedirs(directory, exist_ok=True)
   with open(path, 'w') as handle:

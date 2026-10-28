@@ -16,7 +16,7 @@ let
       example = "$HOME/.zfunc";
       description = ''
         Where to write the ${name} completion scripts, expanded by the shell. `null` is
-        `docopt-completion register`'s default.
+        `docopt.completion register`'s default.
       '';
     };
   };
@@ -35,7 +35,7 @@ let
     in
     lib.concatMapStrings (command: ''
       run ${lib.getExe cfg.package} register ${dir}${name} ${lib.escapeShellArg command} \
-        || warnEcho "docopt-completion: Could not register ${name} completion for ${command}"
+        || warnEcho "docopt.completion: Could not register ${name} completion for ${command}"
     '') cfg.commands;
 in
 {
@@ -62,7 +62,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # The scripts run docopt-completion from $PATH when they regenerate
+    # The scripts run docopt.completion from $PATH when they regenerate
     home.packages = [ cfg.package ];
     home.activation.docopt-completion = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       (

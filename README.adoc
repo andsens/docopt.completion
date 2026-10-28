@@ -26,8 +26,8 @@ Install docopt.completion from a checkout and generate the completion:
 ----
 $ pip install .
 $ completions=${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions
-$ naval_fate --help | docopt-completion bash > "$completions/naval_fate.bash"
-$ naval_fate --help | docopt-completion zsh > ~/.zfunc/_naval_fate  # a directory in $fpath
+$ naval_fate --help | docopt.completion bash > "$completions/naval_fate.bash"
+$ naval_fate --help | docopt.completion zsh > ~/.zfunc/_naval_fate  # a directory in $fpath
 ----
 
 `naval_fate Olympia move 1 5 --sp<TAB>` now completes to `--speed`, and
@@ -40,7 +40,7 @@ to say what an argument completes to:
 
 [source,sh]
 ----
-$ naval_fate --help | docopt-completion intermediate naval_fate.yaml
+$ naval_fate --help | docopt.completion intermediate naval_fate.yaml
 ----
 
 [source,yaml]
@@ -83,7 +83,7 @@ the help text and the file:
 
 [source,sh]
 ----
-$ naval_fate --help | docopt-completion bash naval_fate.yaml > "$completions/naval_fate.bash"
+$ naval_fate --help | docopt.completion bash naval_fate.yaml > "$completions/naval_fate.bash"
 ----
 
 Run `intermediate` with the same file again after changing the help text: it
@@ -132,8 +132,8 @@ The script regenerates itself on the next `<TAB>` after the program changes
 
 [source,sh]
 ----
-$ docopt-completion register bash naval_fate
-$ docopt-completion register zsh naval_fate
+$ docopt.completion register bash naval_fate
+$ docopt.completion register zsh naval_fate
 ----
 
 bash scripts go where bash-completion loads them from

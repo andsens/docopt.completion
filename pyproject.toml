@@ -37,7 +37,7 @@ pyright = "^1.1.238"
 types-docopt = "^0.6.11"
 
 [tool.poetry.scripts]
-docopt-completion = "docopt_completion.__main__:main"
+"docopt.completion" = "docopt_completion.__main__:main"
 
 [tool.pyright]
 include = ["docopt_completion", "tests"]
