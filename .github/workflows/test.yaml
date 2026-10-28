@@ -2,9 +2,13 @@ name: Lint, typecheck, test
 
 on:
   push:
-    branches: [ '*' ]
+    branches: ['*']
+    tags:
+    - '*'
+    - '!v*' # Don't run on version tags, instead the release workflow will include this file and call the build step
+  workflow_call: {}
   pull_request:
-    branches: [ '*' ]
+    branches: ['*']
 
 jobs:
   lint:
@@ -16,14 +20,19 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+    - name: Cache virtualenv
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv
     - name: Install dependencies
       run: .devcontainer/post.sh
     - name: Lint with flake8
       run: |
         # error out if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        .venv/bin/flake8 docopt_completion --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        .venv/bin/flake8 docopt_completion --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
   typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -33,10 +42,15 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+    - name: Cache virtualenv
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv
     - name: Install dependencies
       run: .devcontainer/post.sh
     - name: Typecheck with pyright
-      run: pyright docopt_completion
+      run: .venv/bin/pyright docopt_completion
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -49,7 +63,12 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache virtualenv
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv
     - name: Install dependencies
       run: .devcontainer/post.sh
     - name: Test with pytest
-      run: pytest
+      run: .venv/bin/pytest

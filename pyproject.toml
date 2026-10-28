@@ -18,13 +18,6 @@ packages = [
   { include = "docopt_completion/py.typed" },
 ]
 
-[tool.pylint.'MESSAGES CONTROL']
-indent-string = "  "
-disable = [
-  "missing-function-docstring",
-  "missing-class-docstring",
-]
-
 [tool.flake8]
 max-line-length = 120
 ignore = "E111,E114,E121,W503,E302,E303,E305"
@@ -35,14 +28,11 @@ docopt = "^0.6.2"
 termcolor = "^1.1.0"
 pyyaml = "^6.0"
 docopt-parser = "^0.0.1"
-flake8-pyproject = "^1.1.0.post0"
 
 [tool.poetry.dev-dependencies]
-pylint = "^2.15.4"
 flake8 = "^6.0.0"
+flake8-pyproject = "^1.1.0.post0"
 pytest = "^7.1.1"
-pytest-xdist = "^2.5.0"
-pytest-flake8 = "^1.1.1"
 pyright = "^1.1.238"
 types-docopt = "^0.6.11"
 
@@ -51,71 +41,10 @@ docopt-completion = "docopt_completion.__main__:main"
 
 [tool.pyright]
 include = ["docopt_completion", "tests"]
-strict = ["docopt_completion", "tests"]
-strictListInference = true
-strictDictionaryInference = true
-strictSetInference = true
-strictParameterNoneValue = true
-enableTypeIgnoreComments = true
-reportGeneralTypeIssues = true
-reportPropertyTypeMismatch = true
-reportFunctionMemberAccess = true
-reportMissingImports = true
-reportMissingModuleSource = true
-reportMissingTypeStubs = true
-reportImportCycles = false
-reportUnusedImport = true
-reportUnusedClass = true
-reportUnusedFunction = true
-reportUnusedVariable = true
-reportDuplicateImport = true
-reportWildcardImportFromLibrary = true
-reportOptionalSubscript = true
-reportOptionalMemberAccess = true
-reportOptionalCall = true
-reportOptionalIterable = true
-reportOptionalContextManager = true
-reportOptionalOperand = true
-reportTypedDictNotRequiredAccess = true
-reportUntypedFunctionDecorator = true
-reportUntypedClassDecorator = true
-reportUntypedBaseClass = true
-reportUntypedNamedTuple = true
-reportPrivateUsage = true
-reportPrivateImportUsage = true
-reportConstantRedefinition = true
-reportIncompatibleMethodOverride = true
-reportIncompatibleVariableOverride = true
-reportInconsistentConstructor = true
-reportOverlappingOverload = true
-reportMissingSuperCall = true
-reportUninitializedInstanceVariable = true
-reportInvalidStringEscapeSequence = true
-reportUnknownParameterType = true
-reportUnknownArgumentType = true
-reportUnknownLambdaType = true
-reportUnknownVariableType = true
-reportUnknownMemberType = true
-reportMissingParameterType = true
-reportMissingTypeArgument = true
-reportInvalidTypeVarUse = true
-reportCallInDefaultInitializer = true
-reportUnnecessaryIsInstance = true
-reportUnnecessaryCast = true
-reportUnnecessaryComparison = true
-reportAssertAlwaysTrue = true
-reportSelfClsParameterName = true
-reportImplicitStringConcatenation = true
-reportUndefinedVariable = true
-reportUnboundVariable = true
-reportInvalidStubStatement = true
-reportIncompleteStub = true
-reportUnsupportedDunderAll = true
-reportUnusedCallResult = false
-reportUnusedCoroutine = true
-reportUnusedExpression = true
-reportUnnecessaryTypeIgnoreComment = true
-reportMatchNotExhaustive = true
+typeCheckingMode = "strict"
+exclude = [ ".venv" ]
+venvPath = "."
+venv = ".venv"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
