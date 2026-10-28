@@ -5,34 +5,49 @@ import sys
 import typing as T
 import docopt
 import termcolor
+import yaml
 import docopt_parser as P
 from docopt_completion import __doc__ as pkg_doc, \
   __name__ as root_name, __version__
-from docopt_completion.bash import bash
+from docopt_completion import intermediate
 
 log = logging.getLogger(root_name)
 
 __doc__: str = T.cast(str, pkg_doc) + """
 Usage:
-  docopt-parser generate [-|COMMAND]
-  docopt-parser -h
-  docopt-parser --version
+  docopt-completion intermediate [FILE]
+  docopt-completion -h
+  docopt-completion --version
+
+Reads a docopt help text on stdin.
+
+Commands:
+  intermediate  Write the YAML intermediate to stdout, or update FILE in place
+                keeping its annotations
 
 Options:
   --help -h  Show this help screen
   --version  Show the docopt.completion version
 """
-Params = T.TypedDict('Params', {'--yaml': bool, 'generate': bool, '-': bool})
+Params = T.TypedDict('Params', {'intermediate': bool, 'FILE': 'str | None'})
 
 def docopt_completion(params: Params):
   try:
-    text = ''
-    if params['-']:
-      text = sys.stdin.read()
-    root = P.parse(text)
-    prog = P.get_prog(text).elm
-    bash_completion = bash.generate_completion(prog, root)
-    sys.stdout.write(str(bash_completion))
+    text = sys.stdin.read()
+    if params['intermediate']:
+      previous = None
+      if params['FILE'] is not None and os.path.exists(params['FILE']):
+        with open(params['FILE']) as handle:
+          previous = yaml.safe_load(handle)
+      result, orphans = intermediate.generate(text, previous)
+      for key in orphans:
+        log.warning(f'{key} no longer matches anything in the usage, dropping it')
+      output = yaml.safe_dump(result, sort_keys=False, default_flow_style=None, allow_unicode=True)
+      if params['FILE'] is None:
+        sys.stdout.write(output)
+      else:
+        with open(params['FILE'], 'w') as handle:
+          handle.write(output)
   except P.DocoptError as error:
     log.error(str(error))
     sys.exit(error.exit_code)

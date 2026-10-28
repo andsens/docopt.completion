@@ -5,12 +5,12 @@ version = "0.0.0-dev"
 authors = ["Anders Ingemann <anders@ingemann.de>"]
 license = "MIT"
 readme = "docs/README.pypi.md"
-homepage = "https://github.com/andsens/docopt-completion"
-repository = "https://github.com/andsens/docopt-completion"
+homepage = "https://github.com/andsens/docopt.completion"
+repository = "https://github.com/andsens/docopt.completion"
 classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "License :: OSI Approved :: MIT License",
 ]
 packages = [
@@ -30,24 +30,24 @@ max-line-length = 120
 ignore = "E111,E114,E121,W503,E302,E303,E305"
 
 [tool.poetry.dependencies]
-python = ">=3.7.2,<4.0"
+python = ">=3.11.0,<4.0"
 docopt = "^0.6.2"
 termcolor = "^1.1.0"
 pyyaml = "^6.0"
-ordered-set = "^4.1.0"
-docopt-parser = { path = "../docopt-parser/", develop = true }
+docopt-parser = "^0.0.1"
 flake8-pyproject = "^1.1.0.post0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.15.4"
-flake8 = "^5.0.0"
+flake8 = "^6.0.0"
 pytest = "^7.1.1"
 pytest-xdist = "^2.5.0"
 pytest-flake8 = "^1.1.1"
 pyright = "^1.1.238"
+types-docopt = "^0.6.11"
 
 [tool.poetry.scripts]
-docopt-parser = "docopt_completion.__main__:main"
+docopt-completion = "docopt_completion.__main__:main"
 
 [tool.pyright]
 include = ["docopt_completion", "tests"]
