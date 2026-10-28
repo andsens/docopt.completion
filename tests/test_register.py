@@ -54,6 +54,14 @@ def test_register_stamps_the_script(bin: Path, tmp_path: Path):
   assert 'alpha' in Path(path).read_text()
 
 
+def test_path_is_named_by_the_usage(bin: Path, tmp_path: Path):
+  # Like a script run through a symlink without the extension
+  write_tool(tmp_path / 'src' / 'tool.sh', 'Usage: tool alpha', 1000000000)
+  path = register.register('zsh', str(tmp_path / 'src' / 'tool.sh'), str(tmp_path / 'out'))
+  assert path == str(tmp_path / 'out' / '_tool')
+  assert 'compdef _tool tool' in Path(path).read_text()
+
+
 def test_gnu_help_is_rejected(bin: Path, tmp_path: Path):
   write_tool(bin / 'tool', 'Usage: tool [OPTION]... FILE...', 1000000000)
   with pytest.raises(register.NotDocoptError):

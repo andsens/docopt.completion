@@ -38,7 +38,8 @@ def register(shell: str, command: str, directory: str) -> str:
     if node['type'] == 'argument' and intermediate.placeholder_word(key) in ('option', 'options'):
       raise NotDocoptError(f'The help of {command} looks GNU style ({key}), not docopt')
   compiled = tables.compile(result)
-  name = os.path.basename(command)
+  # A path names a file, the usage names the command that runs it
+  name = result['prog'] if os.sep in command else command
   path = os.path.join(directory, f'{name}.bash' if shell == 'bash' else f'_{name}')
   refresh = (binary, path, ['docopt.completion', 'register', f'--dir={directory}', shell, command])
   code = (bash if shell == 'bash' else zsh).generate(name, compiled, refresh)
