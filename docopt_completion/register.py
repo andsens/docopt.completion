@@ -9,7 +9,7 @@ import subprocess
 import typing as T
 import yaml
 import docopt_parser as P
-from docopt_completion import intermediate, tables, bash, zsh
+from docopt_completion import intermediate, tables, bash, zsh, script
 
 
 class NotDocoptError(P.DocoptError):
@@ -60,7 +60,10 @@ def register(shell: str, command: str, directory: str) -> str:
   # A path names a file, the usage names the command that runs it
   name = result['prog'] if os.sep in command else command
   path = os.path.join(directory, f'{name}.bash' if shell == 'bash' else f'_{name}')
-  refresh = (binary, path, ['docopt.completion', 'register', f'--dir={directory}', shell, command])
+  refresh: script.Refresh = (binary, path, ['docopt.completion', 'register', f'--dir={directory}', shell, command])
+  if os.sep in command:
+    # Relative, so the script works from any checkout of a repo that tracks both
+    refresh = os.path.relpath(binary, os.path.realpath(directory))
   code = (bash if shell == 'bash' else zsh).generate(name, compiled, refresh)
   os.makedirs(directory, exist_ok=True)
   with open(path, 'w') as handle:

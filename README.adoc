@@ -153,6 +153,15 @@ Otherwise bash scripts go where bash-completion loads them from
 scripts to `${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions`, which you add
 to `$fpath` before `compinit`.
 
+A `COMMAND` with a `/` is a path, and the script finds it relative to its own
+directory and checks only its mtime. A repo can track both the program and its
+completion, and every clone keeps them in sync:
+
+[source,sh]
+----
+$ docopt.completion register --dir=completions bash tasks/deploy.sh
+----
+
 `register` refuses GNU style help texts
 (`Usage: grep [OPTION]... PATTERNS [FILE]...`). They parse as docopt but list
 no options.

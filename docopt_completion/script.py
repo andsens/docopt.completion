@@ -4,8 +4,9 @@ import shlex
 import typing as T
 from docopt_completion import tables as Tb
 
-# The resolved binary, the path of the script and the command that regenerates it
-Refresh = T.Tuple[str, str, T.List[str]]
+# The resolved binary, the path of the script and the command that regenerates it,
+# or for a program registered by path that path relative to the script's directory
+Refresh = T.Union[T.Tuple[str, str, T.List[str]], str]
 
 
 def quote(value: str) -> str:

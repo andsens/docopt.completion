@@ -27,11 +27,19 @@ def generate(prog: str, compiled: Tb.Tables, refresh: "script.Refresh | None" = 
   function = '_docopt_' + re.sub(r'[^A-Za-z0-9_]', '_', prog)
   code = ''
   if refresh is not None:
-    binary, path, regenerate = (script.quote(refresh[0]), script.quote(refresh[1]), shlex.join(refresh[2]))
+    if isinstance(refresh, str):
+      # BASH_SOURCE[0] is the file the function was defined in
+      setup = f'local script=${{BASH_SOURCE[0]}} bin\nbin=${{script%/*}}/{script.quote(refresh)}'
+      check = '[[ -e $bin && ( $bin -nt $script || $bin -ot $script ) ]]'
+      regenerate, path = 'docopt.completion register --dir="${script%/*}" bash "$bin"', '"$script"'
+    else:
+      binary, path, regenerate = (script.quote(refresh[0]), script.quote(refresh[1]), shlex.join(refresh[2]))
+      setup = 'local bin'
+      check = (f'bin=$(type -P {shlex.quote(prog)}) && bin=$(realpath -- "$bin") \\\n'
+               f'  && [[ $bin != {binary} || $bin -nt {path} || $bin -ot {path} ]]')
     code = f'''# Regenerate this script when {prog} changed since
-local bin
-if [[ -z ${{_docopt_refreshed-}} ]] && bin=$(type -P {shlex.quote(prog)}) && bin=$(realpath -- "$bin") \\
-  && [[ $bin != {binary} || $bin -nt {path} || $bin -ot {path} ]]; then
+{setup}
+if [[ -z ${{_docopt_refreshed-}} ]] && {check}; then
   local _docopt_refreshed=1
   if {regenerate} >/dev/null 2>&1; then
     # shellcheck disable=SC1090

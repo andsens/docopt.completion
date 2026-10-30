@@ -120,3 +120,29 @@ autoload -U compinit && compinit -u -d "$HOME/.zcompdump"
     session.close()
   assert os.stat(path).st_mtime_ns == os.stat(os.path.realpath(tool)).st_mtime_ns
   assert 'beta' in Path(path).read_text()
+
+
+@pytest.mark.parametrize('shell', ['bash', 'zsh'])
+def test_refresh_by_path(bin: Path, tmp_path: Path, shell: str):
+  # A repo that tracks its task and the completion, cloned elsewhere
+  write_tool(tmp_path / 'repo' / 'tasks' / 'tool.sh', 'Usage: tool alpha', 1000000000)
+  path = register.register(shell, str(tmp_path / 'repo' / 'tasks' / 'tool.sh'), str(tmp_path / 'repo' / 'completions'))
+  assert str(tmp_path) not in Path(path).read_text()
+  shutil.copytree(tmp_path / 'repo', tmp_path / 'clone')
+  name = Path(path).name
+  path = str(tmp_path / 'clone' / 'completions' / name)
+  # To run it, the completion doesn't look it up
+  (bin / 'tool').symlink_to(tmp_path / 'clone' / 'tasks' / 'tool.sh')
+  if shell == 'bash':
+    session = Shell(['bash', '--norc', '--noprofile', '-i'], f'source {path}')
+  else:
+    session = Shell(['zsh', '-f', '-i'], f'autoload -U compinit && compinit -u -d "$HOME/.zcompdump"\nsource {path}')
+  try:
+    assert session.run('tool b\t') == ['b']
+    write_tool(tmp_path / 'clone' / 'tasks' / 'tool.sh', 'Usage: tool (alpha|beta)', 1000000100)
+    assert session.run('tool b\t') == ['beta']
+  finally:
+    session.close()
+  assert os.stat(path).st_mtime_ns == os.stat(tmp_path / 'clone' / 'tasks' / 'tool.sh').st_mtime_ns
+  assert 'beta' in Path(path).read_text()
+  assert 'beta' not in (tmp_path / 'repo' / 'completions' / name).read_text()

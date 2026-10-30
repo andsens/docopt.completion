@@ -26,10 +26,17 @@ def generate(prog: str, compiled: Tb.Tables, refresh: "script.Refresh | None" = 
   function = '_' + prog
   code = ''
   if refresh is not None:
-    binary, path, regenerate = (script.quote(refresh[0]), script.quote(refresh[1]), shlex.join(refresh[2]))
+    if isinstance(refresh, str):
+      setup = f'local script=${{functions_source[{function}]}}\nlocal bin=${{script:h}}/{script.quote(refresh)}'
+      check = '-e $bin && ( $bin -nt $script || $bin -ot $script )'
+      regenerate, path = 'docopt.completion register --dir=${script:h} zsh $bin', '$script'
+    else:
+      binary, path, regenerate = (script.quote(refresh[0]), script.quote(refresh[1]), shlex.join(refresh[2]))
+      setup = f'local bin=${{commands[{prog}]:A}}'
+      check = f'-n $bin && ( $bin != {binary} || $bin -nt {path} || $bin -ot {path} )'
     code = f'''# Regenerate this script when {prog} changed since
-local bin=${{commands[{prog}]:A}}
-if [[ -z $_docopt_refreshed && -n $bin && ( $bin != {binary} || $bin -nt {path} || $bin -ot {path} ) ]]; then
+{setup}
+if [[ -z $_docopt_refreshed && {check} ]]; then
   local _docopt_refreshed=1
   if {regenerate} >/dev/null 2>&1; then
     source {path}
