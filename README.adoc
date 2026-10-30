@@ -153,6 +153,10 @@ Otherwise bash scripts go where bash-completion loads them from
 scripts to `${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions`, which you add
 to `$fpath` before `compinit`.
 
+With an intermediate `intermediates/<prog>.yaml` in the script's directory,
+`register` generates from it and updates it like `intermediate` does, so
+annotations survive the refresh. Create it with `intermediate` to annotate.
+
 A `COMMAND` with a `/` is a path, and the script finds it relative to its own
 directory and checks only its mtime. A repo can track both the program and its
 completion, and every clone keeps them in sync:

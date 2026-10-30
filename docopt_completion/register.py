@@ -1,6 +1,7 @@
 """
-Completion for a docopt program that has none, generated from its `--help`. The script regenerates
-itself when the program's resolved path or modification time changes.
+Completion for a docopt program that has none, generated from its `--help` and the intermediate
+`intermediates/<name>.yaml` in the script's directory if there is one. The script regenerates itself when the program's
+resolved path or modification time changes.
 """
 import os
 import re
@@ -56,9 +57,16 @@ def register(shell: str, command: str, directory: str) -> str:
   for key, node in T.cast(T.Dict[str, T.Dict[str, T.Any]], result['nodes']).items():
     if node['type'] == 'argument' and intermediate.placeholder_word(key) in ('option', 'options'):
       raise NotDocoptError(f'The help of {command} looks GNU style ({key}), not docopt')
-  compiled = tables.compile(result)
   # A path names a file, the usage names the command that runs it
   name = result['prog'] if os.sep in command else command
+  # An intermediate carries annotations, keep it in step with the usage
+  intermediate_path = os.path.join(directory, 'intermediates', f'{name}.yaml')
+  if os.path.exists(intermediate_path):
+    with open(intermediate_path) as handle:
+      result, _ = intermediate.generate(text, yaml.safe_load(handle))
+    with open(intermediate_path, 'w') as handle:
+      yaml.safe_dump(result, handle, sort_keys=False, default_flow_style=None, allow_unicode=True)
+  compiled = tables.compile(result)
   path = os.path.join(directory, f'{name}.bash' if shell == 'bash' else f'_{name}')
   refresh: script.Refresh = (binary, path, ['docopt.completion', 'register', f'--dir={directory}', shell, command])
   if os.sep in command:

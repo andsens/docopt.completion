@@ -3,6 +3,7 @@ import shutil
 import sys
 from pathlib import Path
 import pytest
+import yaml
 import docopt_parser
 from docopt_completion import register
 from tests.shell import Shell
@@ -146,3 +147,17 @@ def test_refresh_by_path(bin: Path, tmp_path: Path, shell: str):
   assert os.stat(path).st_mtime_ns == os.stat(tmp_path / 'clone' / 'tasks' / 'tool.sh').st_mtime_ns
   assert 'beta' in Path(path).read_text()
   assert 'beta' not in (tmp_path / 'repo' / 'completions' / name).read_text()
+
+
+def test_intermediate_is_kept(bin: Path, tmp_path: Path):
+  out = tmp_path / 'out'
+  (out / 'intermediates').mkdir(parents=True)
+  (out / 'intermediates' / 'tool.yaml').write_text('nodes:\n  <ship>: {type: argument, complete: {words: [olympia]}}\n')
+  write_tool(bin / 'tool', 'Usage: tool <ship>', 1000000000)
+  register.register('bash', 'tool', str(out))
+  write_tool(bin / 'tool', 'Usage: tool <ship> [--fast]', 1000000100)
+  path = register.register('bash', 'tool', str(out))
+  assert 'olympia' in Path(path).read_text()
+  updated = yaml.safe_load((out / 'intermediates' / 'tool.yaml').read_text())
+  assert updated['nodes']['<ship>']['complete'] == {'words': ['olympia']}
+  assert '--fast' in updated['nodes']

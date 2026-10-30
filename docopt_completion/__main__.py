@@ -31,9 +31,11 @@ Commands:
   bash          Write a bash completion script to stdout
   zsh           Write a zsh completion script to stdout, for a file named _<prog>
                 in $fpath or to be sourced after compinit
-  register      Write the completion for COMMAND from its --help, which
-                regenerates itself when COMMAND changes. Without --dir the
-                script goes to the shell's directory in
+  register      Write the completion for COMMAND from its --help and the
+                intermediate intermediates/<prog>.yaml in the script's directory
+                if it exists, which register keeps up to date. The script regenerates itself
+                when COMMAND changes. Without --dir the script goes to the
+                shell's directory in
                 ${XDG_CONFIG_HOME:-~/.config}/docopt.completion/config.yaml,
                 else where bash-completion loads it from, or to
                 ${XDG_DATA_HOME:-~/.local/share}/zsh/site-functions for zsh
